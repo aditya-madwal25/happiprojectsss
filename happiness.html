@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAPPYVERSE – The Happiness Board Game</title>
+    <style>
+        /* ===== FONTS ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --mint: #B8F3D8;
+            --lavender: #D4BBDD;
+            --peach: #FFD4BD;
+            --sky: #C3E5F7;
+            --rose: #FFB5C5;
+            --lemon: #FFF6B7;
+            --root-chakra: #E57373;
+            --sacral-chakra: #FFB74D;
+            --solar-chakra: #FFD54F;
+            --heart-chakra: #81C784;
+            --throat-chakra: #64B5F6;
+            --third-eye-chakra: #7986CB;
+            --crown-chakra: #BA68C8;
+            --bg-primary: #FFF9F5;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #4A4A4A;
+            --text-secondary: #7A7A7A;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-hover: rgba(0, 0, 0, 0.12);
+            --joy: #FFD4E5;
+            --connection: #D4E5FF;
+            --mindful: #E5D4FF;
+            --ikigai: #FFFAD4;
+            --surprise: #FFE4D4;
+            --rest: #D4FFF0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #FFF9F5 0%, #FFE5E5 50%, #E5F4FF 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bg-shapes {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .shape {
+            position: absolute; border-radius: 50%; opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+        .shape:nth-child(1) { width: 300px; height: 300px; background: var(--mint); top: 10%; left: 10%; }
+        .shape:nth-child(2) { width: 200px; height: 200px; background: var(--lavender); top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 150px; height: 150px; background: var(--peach); bottom: 20%; left: 20%; animation-delay: 6s; }
+        .shape:nth-child(4) { width: 250px; height: 250px; background: var(--sky); top: 30%; right: 30%; animation-delay: 9s; }
+        @keyframes float { 0%,100%{ transform:translate(0,0) scale(1); } 25%{ transform:translate(20px,-20px) scale(1.1); } 50%{ transform:translate(-15px,15px) scale(0.9); } 75%{ transform:translate(15px,10px) scale(1.05); } }
+
+        /* Header with logo */
+        .main-header {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 10px;
+        }
+        .university-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .university-logo img {
+            height: 50px;          /* increased for better visibility */
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .university-logo span {
+            font-family: 'Comfortaa', cursive;
+            font-weight: 600;
+            color: #4A4A4A;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.6s ease-out;
+        }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-30px); } to { opacity:1; transform:translateY(0); } }
+        .logo {
+            font-family: 'Comfortaa', cursive; font-size: clamp(2.5rem,6vw,4rem); font-weight:700;
+            background: linear-gradient(135deg, #FF6B9D 0%, #C06CF6 50%, #845EC2 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 10px; letter-spacing:2px; text-shadow:0 4px 20px rgba(132,94,194,0.3);
+        }
+        .tagline { font-size: clamp(0.9rem,2vw,1.1rem); color: var(--text-secondary); font-weight:500; }
+
+        .screen { display: none; animation: fadeIn 0.5s ease-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+        /* welcome */
+        .welcome-screen {
+            text-align: center; max-width:600px; margin:50px auto; background:var(--bg-secondary);
+            padding:50px 40px; border-radius:40px; box-shadow:0 20px 60px var(--shadow);
+        }
+        .welcome-icon { font-size:80px; margin-bottom:20px; animation:bounce 2s infinite; }
+        @keyframes bounce { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-20px); } }
+        .welcome-title { font-family:'Comfortaa', cursive; font-size:2.5rem; margin-bottom:15px; }
+        .welcome-description { font-size:1.1rem; color:var(--text-secondary); line-height:1.8; margin-bottom:30px; }
+        .mood-slider-container { margin:30px 0; padding:20px; background:linear-gradient(135deg, var(--mint) 0%, var(--sky) 100%); border-radius:20px; }
+        .mood-label { font-weight:600; margin-bottom:15px; }
+        .mood-slider { width:100%; height:8px; border-radius:10px; background:rgba(255,255,255,0.5); outline:none; -webkit-appearance:none; }
+        .mood-slider::-webkit-slider-thumb { -webkit-appearance:none; width:25px; height:25px; border-radius:50%; background:linear-gradient(135deg,#FF6B9D,#C06CF6); cursor:pointer; box-shadow:0 2px 10px rgba(192,108,246,0.4); }
+        .mood-slider::-moz-range-thumb { width:25px; height:25px; border-radius:50%; background:linear-gradient(135deg,#FF6B9D,#C06CF6); cursor:pointer; border:none; }
+        .mood-value { font-size:2rem; margin-top:10px; }
+
+        .player-setup { margin:30px 0; text-align:left; }
+        .player-count { display:flex; gap:15px; justify-content:center; margin:20px 0; }
+        .player-btn {
+            padding:12px 24px; border:2px solid var(--lavender); background:white; border-radius:20px;
+            cursor:pointer; font-family:'Quicksand',sans-serif; font-weight:600; font-size:1rem;
+            transition:all 0.3s ease;
+        }
+        .player-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px var(--shadow-hover); }
+        .player-btn.selected { background:linear-gradient(135deg, var(--lavender), var(--sky)); color:white; border-color:transparent; }
+        .player-inputs { margin-top:20px; }
+        .player-input-group { margin-bottom:15px; display:flex; gap:10px; align-items:center; }
+        .player-input-group input { flex:1; padding:12px 20px; border:2px solid var(--mint); border-radius:15px; font-family:'Quicksand',sans-serif; font-size:1rem; transition:all 0.3s ease; }
+        .player-input-group input:focus { outline:none; border-color:var(--lavender); box-shadow:0 0 0 3px rgba(212,187,221,0.2); }
+        .emoji-picker { font-size:1.5rem; cursor:pointer; padding:8px; border-radius:10px; transition:all 0.3s ease; }
+        .emoji-picker:hover { background:var(--peach); transform:scale(1.2); }
+
+        .btn {
+            padding:15px 40px; border:none; border-radius:25px; font-family:'Comfortaa',cursive;
+            font-weight:600; font-size:1.1rem; cursor:pointer; transition:all 0.3s ease;
+            box-shadow:0 5px 20px var(--shadow); margin:10px;
+        }
+        .btn-primary { background:linear-gradient(135deg,#FF6B9D 0%,#C06CF6 50%,#845EC2 100%); color:white; }
+        .btn-primary:hover { transform:translateY(-3px); box-shadow:0 8px 25px rgba(132,94,194,0.4); }
+        .btn-secondary { background:white; color:var(--text-primary); border:2px solid var(--lavender); }
+        .btn-secondary:hover { background:var(--lavender); color:white; }
+
+        /* board layout */
+        .game-container { display:grid; grid-template-columns:1fr auto; gap:20px; max-width:1400px; margin:0 auto; align-items:start; }
+        .board-wrapper { width:100%; max-width:900px; margin:0 auto; }
+        .board {
+            position: relative; width:100%; aspect-ratio:1; background:#E8F5E9; border:3px solid #4A4A4A;
+            display: grid; grid-template-columns:120px 1fr 120px; grid-template-rows:120px 1fr 120px;
+        }
+        .corner {
+            background:white; border:2px solid #4A4A4A; display:flex; align-items:center; justify-content:center;
+            font-family:'Comfortaa',cursive; font-weight:700; font-size:1rem; text-align:center; padding:10px;
+            flex-direction:column; position:relative;
+        }
+        .corner.start { grid-column:3; grid-row:3; background:linear-gradient(135deg,#FFD700,#FFA500); }
+        .corner.visit { grid-column:1; grid-row:3; background:linear-gradient(135deg,var(--sky),var(--mint)); }
+        .corner.free { grid-column:1; grid-row:1; background:linear-gradient(135deg,var(--rose),var(--peach)); }
+        .corner.joy { grid-column:3; grid-row:1; background:linear-gradient(135deg,var(--lavender),var(--joy)); }
+        .corner-icon { font-size:2.5rem; margin-bottom:5px; }
+        .corner-title { font-size:0.8rem; }
+
+        .board-side { display:flex; }
+        .board-side.bottom { grid-column:2; grid-row:3; flex-direction:row; }
+        .board-side.left { grid-column:1; grid-row:2; flex-direction:column; }
+        .board-side.top { grid-column:2; grid-row:1; flex-direction:row; }
+        .board-side.right { grid-column:3; grid-row:2; flex-direction:column; }
+
+        .property {
+            flex:1; border:2px solid #4A4A4A; background:white; display:flex; flex-direction:column;
+            position:relative; min-width:0; cursor:pointer; transition:all 0.2s ease;
+        }
+        .property:hover { transform:scale(1.05); z-index:10; box-shadow:0 5px 15px var(--shadow-hover); }
+        .board-side.bottom .property, .board-side.top .property { width:100%; }
+        .board-side.left .property, .board-side.right .property { height:100%; width:120px; }
+        .property-color { height:25px; width:100%; }
+        .board-side.left .property-color, .board-side.right .property-color { width:25px; height:100%; }
+        .property-content { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px; text-align:center; }
+        .board-side.left .property, .board-side.right .property { flex-direction:row; }
+        .property-icon { font-size:1.5rem; margin-bottom:3px; }
+        .property-title { font-size:0.65rem; font-weight:700; line-height:1.1; }
+        .property-hp { font-size:0.55rem; color:var(--text-secondary); margin-top:2px; }
+
+        .board-center {
+            grid-column:2; grid-row:2; background:linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,235,255,0.9));
+            display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;
+            border:2px solid #4A4A4A;
+        }
+        .center-logo { font-family:'Comfortaa',cursive; font-size:2.5rem; font-weight:700; background:linear-gradient(135deg,#FF6B9D,#C06CF6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:15px; }
+        .affirmation-box { font-size:0.9rem; color:var(--text-secondary); font-style:italic; text-align:center; line-height:1.6; }
+
+        .property-pawns {
+            position: absolute; bottom:3px; left:3px; right:3px; display: flex; gap: 2px;
+            flex-wrap: wrap; justify-content: center; z-index:5;
+        }
+        .corner .property-pawns { bottom:5px; }
+        .pawn {
+            width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+            font-size:0.9rem; background:white; box-shadow:0 2px 5px rgba(0,0,0,0.3); border:2px solid #fff;
+            animation: pawnPop 0.3s ease-out;
+        }
+        @keyframes pawnPop { 0%{ transform:scale(0); } 50%{ transform:scale(1.2); } 100%{ transform:scale(1); } }
+        .pawn.active { box-shadow:0 0 0 3px var(--lavender), 0 2px 8px rgba(0,0,0,0.3); animation:pawnPulse 1.5s infinite; }
+        @keyframes pawnPulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.15); } }
+
+        /* sidebar */
+        .sidebar {
+            background:white; border-radius:25px; padding:25px; box-shadow:0 10px 40px var(--shadow);
+            min-width:280px; max-width:350px; position:sticky; top:20px;
+        }
+        .current-player { text-align:center; margin-bottom:25px; padding:20px; background:linear-gradient(135deg,var(--mint),var(--sky)); border-radius:20px; }
+        .current-player-emoji { font-size:3rem; margin-bottom:10px; }
+        .current-player-name { font-family:'Comfortaa',cursive; font-size:1.5rem; font-weight:700; }
+        .dice-container { text-align:center; margin:25px 0; }
+        .dice { font-size:4rem; cursor:pointer; transition:all 0.3s ease; display:inline-block; padding:20px; background:white; border-radius:20px; box-shadow:0 5px 20px var(--shadow); }
+        .dice:hover { transform:scale(1.1) rotate(10deg); }
+        .dice.rolling { animation:roll 0.6s ease-in-out; }
+        @keyframes roll { 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(90deg) scale(1.2); } 50%{ transform:rotate(180deg) scale(0.9); } 75%{ transform:rotate(270deg) scale(1.1); } }
+        .roll-btn { margin-top:15px; }
+
+        .players-list { margin-top:25px; }
+        .player-card { background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(255,240,255,0.9)); padding:15px; border-radius:15px; margin-bottom:15px; border:2px solid transparent; transition:all 0.3s ease; }
+        .player-card.active { border-color:var(--lavender); box-shadow:0 0 0 3px rgba(212,187,221,0.2); }
+        .player-info { display:flex; align-items:center; gap:15px; margin-bottom:10px; }
+        .player-emoji { font-size:2rem; }
+        .player-name { font-weight:700; font-size:1.1rem; }
+        .player-hp { margin-top:8px; font-size:0.9rem; color:var(--text-secondary); }
+        .hp-bar { width:100%; height:8px; background:rgba(0,0,0,0.1); border-radius:10px; overflow:hidden; margin-top:5px; }
+        .hp-bar-fill { height:100%; background:linear-gradient(90deg,#FF6B9D,#C06CF6); border-radius:10px; transition:width 0.5s ease; }
+
+        /* modal */
+        .modal {
+            display: none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); z-index:1000;
+            align-items:center; justify-content:center; animation:fadeIn 0.3s ease-out;
+        }
+        .modal.active { display:flex; }
+        .modal-content {
+            background:white; border-radius:30px; padding:40px; max-width:500px; width:90%;
+            max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);
+            animation:slideUp 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+        }
+        @keyframes slideUp { from { opacity:0; transform:translateY(50px) scale(0.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+        .modal-icon { font-size:4rem; text-align:center; margin-bottom:20px; }
+        .modal-title { font-family:'Comfortaa',cursive; font-size:2rem; text-align:center; margin-bottom:15px; }
+        .modal-description { text-align:center; font-size:1.1rem; color:var(--text-secondary); line-height:1.8; margin-bottom:25px; }
+        .task-instruction { background:linear-gradient(135deg,var(--peach),var(--lemon)); padding:20px; border-radius:20px; margin:20px 0; font-size:1.1rem; font-weight:600; text-align:center; }
+        .chakra-info { text-align:left; padding:20px; border-radius:15px; margin:15px 0; }
+        .chakra-name { font-weight:700; font-size:1.3rem; margin-bottom:10px; }
+        .chakra-meaning { font-size:1rem; line-height:1.6; margin-bottom:15px; }
+        .chakra-action { background:rgba(255,255,255,0.7); padding:15px; border-radius:10px; font-style:italic; }
+        .breathing-exercise { text-align:center; padding:30px; }
+        .breathing-circle {
+            width:150px; height:150px; margin:30px auto; border-radius:50%; background:linear-gradient(135deg,var(--sky),var(--mint));
+            animation:breathe 8s infinite ease-in-out; display:flex; align-items:center; justify-content:center;
+            font-size:1.2rem; font-weight:600; color:white; box-shadow:0 10px 30px rgba(0,0,0,0.2);
+        }
+        @keyframes breathe { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.3); } }
+        .ikigai-diagram { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin:20px 0; }
+        .ikigai-section { padding:20px; border-radius:15px; text-align:center; }
+        .ikigai-section:nth-child(1) { background:var(--rose); }
+        .ikigai-section:nth-child(2) { background:var(--lemon); }
+        .ikigai-section:nth-child(3) { background:var(--mint); }
+        .ikigai-section:nth-child(4) { background:var(--sky); }
+        .ikigai-title { font-weight:700; margin-bottom:8px; font-size:0.95rem; }
+        .ikigai-prompt { font-size:0.85rem; font-style:italic; color:var(--text-secondary); }
+        .modal-buttons { display:flex; gap:15px; justify-content:center; margin-top:25px; }
+
+        .confetti {
+            position:fixed; width:10px; height:10px; background:var(--rose); top:-20px;
+            animation:confetti-fall 3s linear forwards; z-index:2000;
+        }
+        @keyframes confetti-fall { to { transform:translateY(100vh) rotate(360deg); opacity:0; } }
+
+        .end-screen { text-align:center; max-width:700px; margin:0 auto; background:white; padding:50px 40px; border-radius:40px; box-shadow:0 20px 60px var(--shadow); }
+        .trophy-icon { font-size:100px; margin-bottom:20px; animation:bounce 2s infinite; }
+        .end-title { font-family:'Comfortaa',cursive; font-size:3rem; margin-bottom:20px; background:linear-gradient(135deg,#FF6B9D,#C06CF6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .mood-comparison { display:flex; justify-content:space-around; margin:30px 0; padding:25px; background:linear-gradient(135deg,var(--mint),var(--sky)); border-radius:20px; }
+        .mood-before, .mood-after { text-align:center; }
+        .mood-emoji-large { font-size:3rem; margin-bottom:10px; }
+        .mood-label-text { font-weight:600; font-size:1.1rem; }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:20px; margin:30px 0; }
+        .stat-card { padding:20px; border-radius:20px; text-align:center; }
+        .stat-card:nth-child(1) { background:var(--joy); }
+        .stat-card:nth-child(2) { background:var(--connection); }
+        .stat-card:nth-child(3) { background:var(--mindful); }
+        .stat-icon { font-size:2.5rem; margin-bottom:10px; }
+        .stat-value { font-size:2rem; font-weight:700; }
+        .stat-label { font-size:0.9rem; color:var(--text-secondary); margin-top:5px; }
+        .winner-section { margin:30px 0; padding:30px; background:linear-gradient(135deg,#FFD700,#FFA500); border-radius:25px; }
+        .winner-emoji { font-size:4rem; margin-bottom:15px; }
+        .winner-text { font-family:'Comfortaa',cursive; font-size:1.8rem; font-weight:700; color:white; text-shadow:0 2px 10px rgba(0,0,0,0.2); }
+
+        .tutorial { background:linear-gradient(135deg,var(--lavender),var(--sky)); padding:25px; border-radius:20px; margin:20px 0; }
+        .tutorial-title { font-family:'Comfortaa',cursive; font-size:1.5rem; margin-bottom:15px; color:white; }
+        .tutorial-steps { list-style:none; }
+        .tutorial-steps li { padding:12px 0; color:white; font-weight:500; line-height:1.6; }
+        .tutorial-steps li:before { content:"✨ "; margin-right:8px; }
+
+        /* post‑task mood slider (inside modal) */
+        .mood-improve-container { margin:20px 0; padding:15px; background:#f8f0ff; border-radius:15px; text-align:center; }
+        .mood-improve-slider { width:100%; margin:10px 0; }
+
+        /* footer credits */
+        .game-footer {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+            padding: 15px 20px;
+            margin-top: 30px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 30px 30px 0 0;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .game-footer span {
+            font-weight: 600;
+            color: #845EC2;
+        }
+
+        @media (max-width:1024px) {
+            .game-container { grid-template-columns:1fr; }
+            .sidebar { order:-1; max-width:100%; position:static; }
+            .board { grid-template-columns:100px 1fr 100px; grid-template-rows:100px 1fr 100px; }
+            .board-side.left .property, .board-side.right .property { width:100px; }
+        }
+        @media (max-width:768px) {
+            .board { grid-template-columns:80px 1fr 80px; grid-template-rows:80px 1fr 80px; }
+            .board-side.left .property, .board-side.right .property { width:80px; }
+            .center-logo { font-size:1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+
+    <!-- Header with Amity University logo (image from provided URL) -->
+    <div class="main-header">
+        <div class="university-logo">
+            <img src="data:image/jpeg;base64,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" alt="Amity University Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"> 
+            <span style="display: none;">Amity University</span>  <!-- fallback text if image fails -->
+            <span style="font-size: 1.2rem; font-weight: 600; color:#4A4A4A; margin-left:5px;">Happiness Project</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header"><h1 class="logo">HAPPYVERSE</h1><p class="tagline">A Journey to Joy, Connection & Self-Discovery ✨</p></div>
+
+        <!-- WELCOME SCREEN (pre‑game mood) -->
+        <div id="welcomeScreen" class="screen active">
+            <div class="welcome-screen">
+                <div class="welcome-icon">🌈</div>
+                <h2 class="welcome-title">Welcome to HAPPYVERSE!</h2>
+                <p class="welcome-description">A beautiful board game designed to reduce stress, deepen connections, and discover what truly makes you happy. Through mindful challenges, joyful tasks, and meaningful reflections, you'll explore happiness alongside your loved ones.</p>
+                <div class="mood-slider-container">
+                    <div class="mood-label">How are you feeling right now?</div>
+                    <input type="range" min="1" max="10" value="5" class="mood-slider" id="moodBefore">
+                    <div class="mood-value" id="moodBeforeValue">😊 5/10</div>
+                </div>
+                <div class="tutorial">
+                    <h3 class="tutorial-title">How to Play</h3>
+                    <ul class="tutorial-steps"><li>Choose 2-4 players and set your names</li><li>Take turns rolling the dice and moving around the board</li><li>Complete joyful tasks, mindful exercises, and connection challenges</li><li>Watch your colorful pawn move around the board!</li><li>Earn Happiness Points (HP) by participating fully</li><li>The player with the most HP wins, but everyone wins in joy! 💖</li></ul>
+                </div>
+                <div class="player-setup">
+                    <div class="mood-label">How many players?</div>
+                    <div class="player-count">
+                        <button class="player-btn" data-count="2">2 Players</button>
+                        <button class="player-btn selected" data-count="3">3 Players</button>
+                        <button class="player-btn" data-count="4">4 Players</button>
+                    </div>
+                    <div class="player-inputs" id="playerInputs"></div>
+                </div>
+                <button class="btn btn-primary" onclick="startGame()">Start Your Journey 🚀</button>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="gameScreen" class="screen">
+            <div class="game-container">
+                <div class="board-wrapper"><div class="board" id="board"></div></div>
+                <div class="sidebar">
+                    <div class="current-player" id="currentPlayerDisplay">
+                        <div class="current-player-emoji" id="currentPlayerEmoji">😊</div>
+                        <div class="current-player-name" id="currentPlayerName">Your Turn!</div>
+                    </div>
+                    <div class="dice-container">
+                        <div class="dice" id="dice" onclick="rollDice()">🎲</div>
+                        <button class="btn btn-primary roll-btn" onclick="rollDice()">Roll Dice</button>
+                    </div>
+                    <div class="players-list" id="playersList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- END SCREEN -->
+        <div id="endScreen" class="screen">
+            <div class="end-screen">
+                <div class="trophy-icon">🏆</div>
+                <h2 class="end-title">Game Complete!</h2>
+                <div class="mood-comparison">
+                    <div class="mood-before"><div class="mood-emoji-large" id="moodBeforeEmoji">😊</div><div class="mood-label-text">Before</div></div>
+                    <div class="mood-after"><div class="mood-emoji-large" id="moodAfterEmoji">😄</div><div class="mood-label-text">After</div></div>
+                </div>
+                <div class="winner-section" id="winnerSection"><div class="winner-emoji" id="winnerEmoji">👑</div><div class="winner-text" id="winnerText">Champion of Happiness!</div></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon">🎉</div><div class="stat-value" id="totalTasks">0</div><div class="stat-label">Tasks Completed</div></div>
+                    <div class="stat-card"><div class="stat-icon">💖</div><div class="stat-value" id="totalConnections">0</div><div class="stat-label">Connections Made</div></div>
+                    <div class="stat-card"><div class="stat-icon">🧘</div><div class="stat-value" id="totalMindful">0</div><div class="stat-label">Mindful Moments</div></div>
+                </div>
+                <p class="welcome-description">Thank you for playing HAPPYVERSE! Remember, happiness is a journey, not a destination. Keep spreading joy and stay connected with those you love. ✨</p>
+                <button class="btn btn-primary" onclick="playAgain()">Play Again 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL (will contain post‑task mood slider when needed) -->
+    <div class="modal" id="modal"><div class="modal-content" id="modalContent"></div></div>
+
+    <!-- FOOTER with credits -->
+    <div class="game-footer">
+        Made by: <span>Aditya Madwal, Chaitanya Gupta, Gandharv K. Sharma, Rohan Joshi, Soumil Jain</span>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- FIXED DATA ----------
+            const affirmations = [
+                "You are worthy of all the good things happening in your life. 💫",
+                "Your presence makes a difference in this world. 🌟",
+                "You are growing and evolving every single day. 🌱",
+                "You deserve kindness, especially from yourself. 💖",
+                "Your journey is unique and beautiful. 🦋",
+                "You have the power to create positive change. ✨",
+                "You are enough, just as you are. 🌈",
+                "Your smile can brighten someone's day. 😊",
+                "You are capable of amazing things. 🚀",
+                "The world is better with you in it. 🌍"
+            ];
+
+            const boxes = [
+                { id:0, category:'start', icon:'🏠', title:'START', hp:20, isCorner:true },
+                { id:1, category:'joy', icon:'💃', title:'Dance Break', color:'#FFD4E5', task:'Dance for 30 seconds without music! Let your body move freely and smile!', hp:15 },
+                { id:2, category:'connection', icon:'💝', title:'Compliment', color:'#D4E5FF', task:'Give an honest, heartfelt compliment to the player on your left.', hp:20 },
+                { id:3, category:'chakra', icon:'🔴', title:'Root Chakra', color:'#E57373', chakra:'root', meaning:'Grounding & Safety', action:'Stand firmly and imagine roots growing from your feet into the earth. Feel secure.', hp:15 },
+                { id:4, category:'joy', icon:'🎭', title:'Memory Lane', color:'#FFD4E5', task:'Share your favorite childhood memory in 30 seconds.', hp:15 },
+                { id:5, category:'mindful', icon:'🌬️', title:'Breathing', color:'#E5D4FF', task:'breathing', hp:20 },
+                { id:6, category:'surprise', icon:'✨', title:'Happy Fact', color:'#FFE4D4', task:'Otters hold hands when they sleep so they don\'t drift apart! 🦦 Isn\'t that adorable?', hp:10 },
+                { id:7, category:'ikigai', icon:'❤️', title:'What You Love', color:'#FFFAD4', ikigai:'love', prompt:'Share one thing you absolutely love doing, something that makes time fly!', hp:15 },
+                { id:8, category:'connection', icon:'🤗', title:'Group Hug', color:'#D4E5FF', task:'Everyone stand up for a group hug! Virtual hugs count too! 💫', hp:25 },
+                { id:9, category:'chakra', icon:'🟠', title:'Sacral', color:'#FFB74D', chakra:'sacral', meaning:'Creativity & Pleasure', action:'Place hands on lower belly. Breathe deeply. Embrace your creative energy!', hp:15 },
+                { id:10, category:'rest', icon:'☁️', title:'REST ZONE', hp:5, isCorner:true },
+                { id:11, category:'joy', icon:'😊', title:'Smile Time', color:'#FFD4E5', task:'Close your eyes and hold a genuine smile for 10 seconds. Feel the joy spread through your body!', hp:10 },
+                { id:12, category:'mindful', icon:'🙏', title:'Gratitude', color:'#E5D4FF', task:'Share three things you\'re grateful for right now. Big or small, all count!', hp:20 },
+                { id:13, category:'surprise', icon:'🎨', title:'Quick Draw', color:'#FFE4D4', task:'Draw a smiley face in the air with your finger. Everyone else copies you!', hp:10 },
+                { id:14, category:'connection', icon:'👂', title:'Listen Deep', color:'#D4E5FF', task:'The player on your right shares something important. Listen with your full heart.', hp:20 },
+                { id:15, category:'chakra', icon:'🟡', title:'Solar Plexus', color:'#FFD54F', chakra:'solar', meaning:'Personal Power & Confidence', action:'Stand tall, hands on hips (power pose). Say: "I am confident and capable!"', hp:15 },
+                { id:16, category:'ikigai', icon:'⭐', title:'Your Talent', color:'#FFFAD4', ikigai:'good', prompt:'Share a skill or talent you\'re proud of. Own your greatness!', hp:15 },
+                { id:17, category:'joy', icon:'🎶', title:'Hum Happy', color:'#FFD4E5', task:'Hum your favorite song for 15 seconds. Let others guess what it is!', hp:15 },
+                { id:18, category:'mindful', icon:'🌟', title:'5-4-3-2-1', color:'#E5D4FF', task:'Name: 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste.', hp:25 },
+                { id:19, category:'surprise', icon:'📱', title:'Text Love', color:'#FFE4D4', task:'Send a quick message to someone you miss: "Thinking of you! 💙"', hp:20 },
+                { id:20, category:'free', icon:'🧘', title:'FREE MEDITATION', hp:10, isCorner:true },
+                { id:21, category:'connection', icon:'💬', title:'Appreciation', color:'#D4E5FF', task:'Everyone shares ONE thing they appreciate about you. Soak it in!', hp:30 },
+                { id:22, category:'chakra', icon:'🟢', title:'Heart Chakra', color:'#81C784', chakra:'heart', meaning:'Love & Compassion', action:'Hand on heart. Send love to yourself, then to everyone playing. Feel it grow.', hp:15 },
+                { id:23, category:'joy', icon:'🎯', title:'Perfect Day', color:'#FFD4E5', task:'Describe your perfect day in exactly 10 words. Make them count!', hp:15 },
+                { id:24, category:'ikigai', icon:'🌍', title:'World Needs', color:'#FFFAD4', ikigai:'world', prompt:'Share one way you want to make the world a little better.', hp:15 },
+                { id:25, category:'mindful', icon:'🌺', title:'Body Scan', color:'#E5D4FF', task:'Close your eyes. Notice: How do your feet feel? Your shoulders? Your face? Just notice.', hp:20 },
+                { id:26, category:'surprise', icon:'😂', title:'Laughter', color:'#FFE4D4', task:'Try to make everyone laugh in 20 seconds. Silly faces encouraged!', hp:20 },
+                { id:27, category:'chakra', icon:'🔵', title:'Throat Chakra', color:'#64B5F6', chakra:'throat', meaning:'Expression & Truth', action:'Speak your truth: Share one thing you\'ve wanted to say but haven\'t. Be brave.', hp:15 },
+                { id:28, category:'connection', icon:'🌟', title:'Strength Share', color:'#D4E5FF', task:'Tell the player across from you what strength you see in them.', hp:20 },
+                { id:29, category:'joy', icon:'🎪', title:'Silly Walk', color:'#FFD4E5', task:'Walk to the kitchen and back in the silliest way possible!', hp:15 },
+                { id:30, category:'joy', icon:'🎉', title:'JOY CELEBRATION', hp:30, isCorner:true },
+                { id:31, category:'mindful', icon:'🕯️', title:'Candle Gaze', color:'#E5D4FF', task:'Stare at one point for 20 seconds without blinking. Notice everything about it.', hp:15 },
+                { id:32, category:'ikigai', icon:'💰', title:'Value You', color:'#FFFAD4', ikigai:'paid', prompt:'What skill could you teach others? You have value to share!', hp:15 },
+                { id:33, category:'chakra', icon:'🟣', title:'Third Eye', color:'#7986CB', chakra:'thirdeye', meaning:'Intuition & Insight', action:'Close your eyes. Breathe. Ask yourself: "What do I need to know?" Trust the answer.', hp:15 },
+                { id:34, category:'surprise', icon:'🎁', title:'Future Gift', color:'#FFE4D4', task:'If you could give everyone here a gift, what would it be? Share!', hp:15 },
+                { id:35, category:'connection', icon:'🫂', title:'Mirror Game', color:'#D4E5FF', task:'Face another player. Mirror their movements for 30 seconds. Switch who leads!', hp:20 },
+                { id:36, category:'joy', icon:'🌈', title:'Color Joy', color:'#FFD4E5', task:'Name your favorite color and why it makes you happy!', hp:10 },
+                { id:37, category:'chakra', icon:'🟪', title:'Crown Chakra', color:'#BA68C8', chakra:'crown', meaning:'Spiritual Connection', action:'Reach hands up to the sky. Feel connected to something greater than yourself.', hp:15 },
+                { id:38, category:'mindful', icon:'🍃', title:'Wind Down', color:'#E5D4FF', task:'Take 3 deep breaths. In through nose (count 4), hold (count 4), out through mouth (count 6).', hp:20 },
+                { id:39, category:'surprise', icon:'✨', title:'Magic Moment', color:'#FFE4D4', task:'Share one small magical moment from this week that made you smile.', hp:15 }
+            ];
+
+            const playerEmojis = ['😊','🥰','😎','🤗','🌟','💫','🦋','🌸','🌈','✨'];
+            const moodEmojis = ['😢','😔','😕','😐','🙂','😊','😄','😃','😁','🥳'];
+
+            // ---------- GLOBAL STATE ----------
+            let gameState = {
+                players: [],
+                currentPlayerIndex: 0,
+                moodBefore: 5,
+                moodAfter: 5,
+                stats: { tasks:0, connections:0, mindful:0 }
+            };
+
+            let emojiIndex = {};
+
+            // ---------- helper functions ----------
+            window.getMoodEmoji = function(v) { return moodEmojis[Math.min(9, Math.max(0, v-1))]; };
+
+            function hpToEmoji(baseEmoji, hp) {
+                if (hp >= 180) return '🤩';
+                if (hp >= 140) return '😁';
+                if (hp >= 100) return '😊';
+                if (hp >= 60) return '🙂';
+                if (hp >= 20) return '😐';
+                return baseEmoji;
+            }
+
+            function refreshPawnEmojis() {
+                gameState.players.forEach((p, idx) => {
+                    let initialMoodEmoji = window.getMoodEmoji(gameState.moodBefore);
+                    p.currentEmoji = hpToEmoji(initialMoodEmoji, p.hp);
+                });
+                updateAllPawns();
+            }
+
+            window.updateAllPawns = function() {
+                document.querySelectorAll('.property-pawns').forEach(el => el.innerHTML = '');
+                gameState.players.forEach((p, idx) => {
+                    const cont = document.getElementById(`pawns-${p.position}`);
+                    if (cont) {
+                        const pawn = document.createElement('div');
+                        pawn.className = 'pawn' + (idx === gameState.currentPlayerIndex ? ' active' : '');
+                        pawn.textContent = p.currentEmoji || p.emoji || '😊';
+                        pawn.title = p.name;
+                        cont.appendChild(pawn);
+                    }
+                });
+            };
+
+            window.updatePlayersList = function() {
+                const list = document.getElementById('playersList');
+                if (!list) return;
+                list.innerHTML = '<h3 style="margin-bottom:15px;font-family:\'Comfortaa\',cursive;">Players</h3>';
+                gameState.players.forEach((p, idx) => {
+                    const displayEmoji = p.currentEmoji || p.emoji;
+                    const card = document.createElement('div');
+                    card.className = `player-card ${idx === gameState.currentPlayerIndex ? 'active' : ''}`;
+                    card.innerHTML = `
+                        <div class="player-info"><div class="player-emoji">${displayEmoji}</div><div><div class="player-name">${p.name}</div><div class="player-hp">HP: ${p.hp}</div></div></div>
+                        <div class="hp-bar"><div class="hp-bar-fill" style="width:${Math.min(100, (p.hp/200)*100)}%"></div></div>
+                    `;
+                    list.appendChild(card);
+                });
+            };
+
+            window.updateCurrentPlayer = function() {
+                const p = gameState.players[gameState.currentPlayerIndex];
+                document.getElementById('currentPlayerEmoji').textContent = p.currentEmoji || p.emoji;
+                document.getElementById('currentPlayerName').textContent = `${p.name}'s Turn!`;
+                updatePlayersList();
+                updateAllPawns();
+            };
+
+            window.showMoodImprovementModal = function(originalBoxHp) {
+                const modal = document.getElementById('modal');
+                const content = document.getElementById('modalContent');
+                let html = `
+                    <div class="modal-icon">🌤️</div>
+                    <h2 class="modal-title">How do you feel now?</h2>
+                    <p class="modal-description">After this activity, has your mood improved?</p>
+                    <div class="mood-improve-container">
+                        <div class="mood-label">How much better are you feeling? (1 = same, 10 = much better)</div>
+                        <input type="range" min="1" max="10" value="5" class="mood-slider mood-improve-slider" id="moodImproveSlider">
+                        <div class="mood-value" id="moodImproveValue">🙂 5/10</div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn btn-primary" id="submitMoodImproveBtn">Claim bonus HP ✨</button>
+                    </div>
+                `;
+                content.innerHTML = html;
+                modal.classList.add('active');
+
+                const slider = document.getElementById('moodImproveSlider');
+                const valDiv = document.getElementById('moodImproveValue');
+                const updateSlider = () => {
+                    const v = parseInt(slider.value);
+                    valDiv.textContent = `${window.getMoodEmoji(v)} ${v}/10`;
+                };
+                slider.addEventListener('input', updateSlider);
+                updateSlider();
+
+                document.getElementById('submitMoodImproveBtn').onclick = () => {
+                    const improvement = parseInt(slider.value);
+                    const bonus = improvement * 2;
+                    const player = gameState.players[gameState.currentPlayerIndex];
+                    player.hp = Math.min(200, player.hp + originalBoxHp + bonus);
+                    gameState.moodAfter = Math.min(10, gameState.moodAfter + Math.floor(improvement/3));
+                    createConfetti();
+                    modal.classList.remove('active');
+                    refreshPawnEmojis();
+                    updatePlayersList();
+                    setTimeout(() => nextTurn(), 500);
+                };
+            };
+
+            window.completeTask = function(originalHp) {
+                showMoodImprovementModal(originalHp);
+            };
+
+            function showBoxModal(box) {
+                const modal = document.getElementById('modal');
+                const content = document.getElementById('modalContent');
+                let html = `<div class="modal-icon">${box.icon}</div><h2 class="modal-title">${box.title}</h2>`;
+                const cat = box.category;
+
+                if (cat === 'start') {
+                    html += `<p class="modal-description">Welcome back to START! You'll get a chance to rate your mood after the lap.</p><div class="modal-buttons"><button class="btn btn-primary" onclick="showMoodImprovementModal(${box.hp})">Continue 🌟</button></div>`;
+                } else if (cat === 'joy' || cat === 'surprise' || cat === 'connection' || cat === 'mindful' || cat === 'chakra' || cat === 'ikigai' || cat === 'rest' || cat === 'free') {
+                    if (cat === 'joy' || cat === 'surprise' || cat === 'connection') {
+                        if (cat === 'joy') gameState.stats.tasks++;
+                        if (cat === 'connection') gameState.stats.connections++;
+                        if (cat === 'surprise') gameState.stats.tasks++;
+                        html += `<div class="task-instruction">${box.task || 'Enjoy this moment!'}</div><p class="modal-description">Complete it, then tell us how you feel.</p>`;
+                    } else if (cat === 'mindful') {
+                        gameState.stats.mindful++;
+                        if (box.task === 'breathing') {
+                            html += `<div class="breathing-exercise"><p class="modal-description">Take a mindful breathing break</p><div class="breathing-circle">Breathe</div><p style="margin-top:20px;color:var(--text-secondary);">Watch the circle expand and contract.<br>Breathe in as it grows, out as it shrinks.</p></div>`;
+                        } else {
+                            html += `<div class="task-instruction">${box.task || 'Pause and breathe'}</div>`;
+                        }
+                    } else if (cat === 'chakra') {
+                        gameState.stats.mindful++;
+                        html += `<div class="chakra-info" style="background:${box.color}"><div class="chakra-name">${box.title}</div><div class="chakra-meaning">${box.meaning}</div><div class="chakra-action">${box.action}</div></div>`;
+                    } else if (cat === 'ikigai') {
+                        gameState.stats.tasks++;
+                        html += `<div class="ikigai-diagram">
+                            <div class="ikigai-section"><div class="ikigai-title">❤️ What You Love</div><div class="ikigai-prompt">What brings you joy?</div></div>
+                            <div class="ikigai-section"><div class="ikigai-title">⭐ What You're Good At</div><div class="ikigai-prompt">What are your strengths?</div></div>
+                            <div class="ikigai-section"><div class="ikigai-title">🌍 What World Needs</div><div class="ikigai-prompt">How can you help?</div></div>
+                            <div class="ikigai-section"><div class="ikigai-title">💰 What You Can Be Paid For</div><div class="ikigai-prompt">What's valuable?</div></div>
+                        </div><div class="task-instruction">${box.prompt || 'Reflect on your ikigai'}</div>`;
+                    } else if (cat === 'rest' || cat === 'free') {
+                        html += `<p class="modal-description">Take a moment to relax. You deserve it! 🌸</p><div style="font-size:4rem;margin:30px 0;">☁️✨☁️</div>`;
+                    }
+                    html += `<div class="modal-buttons"><button class="btn btn-primary" onclick="showMoodImprovementModal(${box.hp})">Done – rate mood ✨</button></div>`;
+                } else {
+                    html += `<p class="modal-description">Enjoy this space ✨</p><div class="modal-buttons"><button class="btn btn-primary" onclick="showMoodImprovementModal(${box.hp})">OK</button></div>`;
+                }
+                content.innerHTML = html;
+                modal.classList.add('active');
+            }
+
+            window.showBoxDetails = function(box) { showBoxModal(box); };
+
+            window.rollDice = function() {
+                const dice = document.getElementById('dice');
+                dice.classList.add('rolling');
+                const diceValues = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+                let rolls = 0;
+                const interval = setInterval(() => {
+                    dice.textContent = diceValues[Math.floor(Math.random()*6)];
+                    rolls++;
+                    if (rolls>10) {
+                        clearInterval(interval);
+                        const final = Math.floor(Math.random()*6)+1;
+                        dice.textContent = diceValues[final-1];
+                        dice.classList.remove('rolling');
+                        movePlayer(final);
+                    }
+                },100);
+            };
+
+            function movePlayer(steps) {
+                const player = gameState.players[gameState.currentPlayerIndex];
+                player.position = (player.position + steps) % boxes.length;
+                updateAllPawns();
+                setTimeout(() => showBoxModal(boxes[player.position]), 600);
+            }
+
+            function nextTurn() {
+                gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+                if (gameState.currentPlayerIndex === 0) {
+                    const maxHP = Math.max(...gameState.players.map(p => p.hp));
+                    if (maxHP >= 300) { endGame(); return; }
+                }
+                updateCurrentPlayer();
+            }
+
+            function endGame() {
+                const winner = gameState.players.reduce((p,c)=>p.hp>c.hp?p:c);
+                const moodAfter = Math.min(10, gameState.moodBefore + Math.floor(Math.random()*3)+2);
+                gameState.moodAfter = moodAfter;
+                document.getElementById('moodBeforeEmoji').textContent = window.getMoodEmoji(gameState.moodBefore);
+                document.getElementById('moodAfterEmoji').textContent = window.getMoodEmoji(moodAfter);
+                document.getElementById('winnerEmoji').textContent = winner.currentEmoji || winner.emoji;
+                document.getElementById('winnerText').textContent = `${winner.name} - Champion of Happiness!`;
+                document.getElementById('totalTasks').textContent = gameState.stats.tasks;
+                document.getElementById('totalConnections').textContent = gameState.stats.connections;
+                document.getElementById('totalMindful').textContent = gameState.stats.mindful;
+                createConfetti(); setTimeout(createConfetti,1000); setTimeout(createConfetti,2000);
+                showScreen('endScreen');
+            }
+
+            window.createConfetti = function() {
+                const colors = ['#FFD4E5','#D4E5FF','#E5D4FF','#FFFAD4','#FFE4D4','#D4FFF0'];
+                for (let i=0;i<30;i++) {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = Math.random()*100+'%';
+                    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+                    c.style.animationDelay = Math.random()*0.5+'s';
+                    c.style.animationDuration = (Math.random()*2+2)+'s';
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 3000);
+                }
+            };
+
+            window.startGame = function() {
+                const selected = document.querySelector('.player-btn.selected');
+                const count = selected ? parseInt(selected.dataset.count) : 3;
+                gameState.players = [];
+                for (let i=0;i<count;i++) {
+                    const inp = document.getElementById(`playerName${i}`);
+                    const name = inp ? inp.value : `Player ${i+1}`;
+                    const emojiSpan = document.getElementById(`playerEmoji${i}`);
+                    const chosenEmoji = emojiSpan ? emojiSpan.textContent : playerEmojis[i % playerEmojis.length];
+                    gameState.players.push({ 
+                        name, 
+                        emoji: chosenEmoji,
+                        hp:100, 
+                        position:0,
+                        currentEmoji: window.getMoodEmoji(gameState.moodBefore)
+                    });
+                }
+                gameState.currentPlayerIndex = 0;
+                gameState.stats = { tasks:0, connections:0, mindful:0 };
+                gameState.moodAfter = gameState.moodBefore;
+
+                refreshPawnEmojis();
+
+                showScreen('gameScreen');
+                window.initializeBoard();
+                updatePlayersList();
+                updateCurrentPlayer();
+            };
+
+            window.playAgain = function() {
+                gameState = { players:[], currentPlayerIndex:0, moodBefore:5, moodAfter:5, stats:{ tasks:0,connections:0,mindful:0 } };
+                showScreen('welcomeScreen');
+            };
+
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            window.initializeBoard = function() {
+                const board = document.getElementById('board');
+                if (!board) return;
+                board.innerHTML = '';
+                const corners = [
+                    { pos:0, gridCol:3, gridRow:3, box:boxes[0] },
+                    { pos:10, gridCol:1, gridRow:3, box:boxes[10] },
+                    { pos:20, gridCol:1, gridRow:1, box:boxes[20] },
+                    { pos:30, gridCol:3, gridRow:1, box:boxes[30] }
+                ];
+                corners.forEach(corner => {
+                    const elem = createCorner(corner.box);
+                    elem.style.gridColumn = corner.gridCol;
+                    elem.style.gridRow = corner.gridRow;
+                    board.appendChild(elem);
+                });
+                const sides = [
+                    { name:'bottom', gridCol:2, gridRow:3, boxes:boxes.slice(1,10) },
+                    { name:'left', gridCol:1, gridRow:2, boxes:boxes.slice(11,20) },
+                    { name:'top', gridCol:2, gridRow:1, boxes:boxes.slice(21,30) },
+                    { name:'right', gridCol:3, gridRow:2, boxes:boxes.slice(31,40) }
+                ];
+                sides.forEach(side => {
+                    const sideElem = document.createElement('div');
+                    sideElem.className = `board-side ${side.name}`;
+                    sideElem.style.gridColumn = side.gridCol;
+                    sideElem.style.gridRow = side.gridRow;
+                    side.boxes.forEach(box => sideElem.appendChild(createProperty(box)));
+                    board.appendChild(sideElem);
+                });
+                const center = document.createElement('div');
+                center.className = 'board-center';
+                center.innerHTML = `<div class="center-logo">HAPPYVERSE</div><div class="affirmation-box" id="affirmation">${affirmations[0]}</div>`;
+                board.appendChild(center);
+                updateAllPawns();
+                window.updateAffirmation();
+                setInterval(window.updateAffirmation, 30000);
+            };
+
+            function createCorner(box) {
+                const corner = document.createElement('div');
+                corner.className = `corner ${box.category}`;
+                corner.dataset.position = box.id;
+                corner.innerHTML = `<div class="corner-icon">${box.icon}</div><div class="corner-title">${box.title}</div><div class="property-pawns" id="pawns-${box.id}"></div>`;
+                corner.addEventListener('click', () => showBoxDetails(box));
+                return corner;
+            }
+
+            function createProperty(box) {
+                const prop = document.createElement('div');
+                prop.className = 'property';
+                prop.dataset.position = box.id;
+                const colorBar = document.createElement('div');
+                colorBar.className = 'property-color';
+                colorBar.style.background = box.color || '#ccc';
+                const content = document.createElement('div');
+                content.className = 'property-content';
+                content.innerHTML = `<div class="property-icon">${box.icon}</div><div class="property-title">${box.title}</div><div class="property-hp">+${box.hp} HP</div>`;
+                const pawns = document.createElement('div');
+                pawns.className = 'property-pawns';
+                pawns.id = `pawns-${box.id}`;
+                prop.appendChild(colorBar); prop.appendChild(content); prop.appendChild(pawns);
+                prop.addEventListener('click', () => showBoxDetails(box));
+                return prop;
+            }
+
+            window.updateAffirmation = function() {
+                const elem = document.getElementById('affirmation');
+                if (elem) {
+                    elem.style.opacity = '0';
+                    setTimeout(() => {
+                        elem.textContent = affirmations[Math.floor(Math.random() * affirmations.length)];
+                        elem.style.opacity = '1';
+                    }, 300);
+                }
+            };
+
+            window.generatePlayerInputs = function(count) {
+                const container = document.getElementById('playerInputs');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i=0;i<count;i++) {
+                    const div = document.createElement('div');
+                    div.className = 'player-input-group';
+                    div.innerHTML = `
+                        <input type="text" placeholder="Player ${i+1} Name" id="playerName${i}" value="Player ${i+1}">
+                        <span class="emoji-picker" onclick="cycleEmoji(${i})" id="playerEmoji${i}">${playerEmojis[i]}</span>
+                    `;
+                    container.appendChild(div);
+                }
+            };
+
+            window.cycleEmoji = function(pid) {
+                if (!emojiIndex[pid]) emojiIndex[pid] = pid;
+                emojiIndex[pid] = (emojiIndex[pid] + 1) % playerEmojis.length;
+                const span = document.getElementById(`playerEmoji${pid}`);
+                if (span) span.textContent = playerEmojis[emojiIndex[pid]];
+            };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                generatePlayerInputs(3);
+                const moodSlider = document.getElementById('moodBefore');
+                const moodVal = document.getElementById('moodBeforeValue');
+                if (moodSlider) {
+                    moodSlider.addEventListener('input', function() {
+                        const v = parseInt(this.value);
+                        gameState.moodBefore = v;
+                        moodVal.textContent = `${window.getMoodEmoji(v)} ${v}/10`;
+                    });
+                }
+                document.querySelectorAll('.player-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+                        this.classList.add('selected');
+                        generatePlayerInputs(parseInt(this.dataset.count));
+                    });
+                });
+                document.getElementById('modal').addEventListener('click', function(e) {
+                    if (e.target === this) this.classList.remove('active');
+                });
+            });
+
+        })();
+    </script>
+</body>
+</html>
